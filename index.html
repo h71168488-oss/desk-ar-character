@@ -303,7 +303,7 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
 /* ───────── 동작 ───────── */
 let act = null, walk = null, popT = 1, S = 1, placed = false, mode = 'none';
-const DUR = { jump: 1.1, pat: 2.2, spin: 1.25, thud: 3.55, surprise: 1.5, eat: 2.9 };
+const DUR = { jump: 1.1, pat: 2.2, spin: 1.25, thud: 4.1, surprise: 1.5, eat: 2.9 };
 function play(type) {
   if (!placed) return;
   walk = null; act = { type, t: 0, flags: {} }; candy.visible = false;
@@ -369,20 +369,36 @@ function animate(dt) {
         if (u >= 1 && !f.land) { f.land = true; SQ.v -= 2.5; ROLL.v += 1.2; }
         break;
       }
-      case 'thud': {   // 옆으로 돌아서 앞으로 넘어지기 → 볼 찌부로 엎드리기 → 일어나기
-        const TIP = 1.48, T0 = 0.22;
-        P.spin = Math.PI / 2 * (easeInOut(clamp01(t / T0)) - easeInOut(clamp01((t - 3.15) / 0.35)));
-        const tt = t - T0;
-        if (tt < 0.12) { P.sq = 1.05; P.armL = 0.6; P.armR = -0.6; }
-        else if (tt < 0.45) { const u = (tt - 0.12) / 0.33; P.tip = TIP * u * u; P.armL = 1.5; P.armR = -1.5; P.footL = P.footR = 0.03; }
-        else if (tt < 2.4) {
-          if (!f.hit) { f.hit = true; SQ.v -= 4.5; spawn('thud', new THREE.Vector3(0, 0.75, 0.25), { life: 1.6, size: 0.42 }); }
-          const k = Math.exp(-(tt - 0.45) * 7);
-          P.tip = TIP - 0.1 * Math.abs(Math.sin((tt - 0.45) * 18)) * k;
+      case 'thud': {   // 보고 있는 방향으로 뒤뚱뒤뚱 걷다가 → 발이 걸려 휘청 → 꽈당 (볼 찌부) → 일어나기
+        const TIP = 1.48, WALK = 1.0, TRIP = 1.25, FALL = 1.55, UP = 3.4;
+        const fwd = (dist) => {        // 앞으로 조금 이동 (PC에서는 원판 밖으로 안 나가게)
+          tmpV.set(Math.sin(stage.rotation.y), 0, Math.cos(stage.rotation.y)).multiplyScalar(dist * S);
+          const nx = stage.position.x + tmpV.x, nz = stage.position.z + tmpV.z;
+          if (mode !== 'preview' || Math.hypot(nx, nz) < 1.45) { stage.position.x = nx; stage.position.z = nz; }
+        };
+        if (t < WALK) {
+          f.phase = (f.phase ?? 0) + dt * 10; fwd(0.9 * dt);
+          const step = Math.floor(f.phase / Math.PI); if (step !== f.step) { f.step = step; SQ.v -= 1.3; }
+          const sw = Math.sin(f.phase);
+          P.y = Math.abs(sw) * 0.07; P.roll = sw * 0.13; P.lean = 0.12; P.armL = 0.35 * sw; P.armR = 0.35 * sw;
+          P.footL = Math.max(0, sw) * 0.05; P.footR = Math.max(0, -sw) * 0.05;
+        } else if (t < TRIP) {
+          const u = (t - WALK) / (TRIP - WALK); fwd(0.6 * dt);
+          if (!f.trip) { f.trip = true; SQ.v += 1.5; }
+          P.lean = 0.12 + 0.35 * u; P.y = Math.sin(u * Math.PI) * 0.05;
+          P.armL = 1.6 + 0.4 * Math.sin(t * 40); P.armR = -1.6 - 0.4 * Math.sin(t * 40 + 1); P.footR = 0.04 * (1 - u);
+          P.roll = 0.08 * Math.sin(t * 30); P.eyeScale = 1.3;
+        } else if (t < FALL) {
+          const u = (t - TRIP) / (FALL - TRIP); fwd(0.4 * dt);
+          P.tip = TIP * u * u; P.lean = 0.47 * (1 - u); P.armL = 1.6; P.armR = -1.6; P.eyeScale = 1.3;
+        } else if (t < UP) {
+          if (!f.hit) { f.hit = true; SQ.v -= 4.5; spawn('thud', new THREE.Vector3(0.45, 0.7, frontZ + 0.5), { life: 1.6, size: 0.42 }); }
+          const k = Math.exp(-(t - FALL) * 7);
+          P.tip = TIP - 0.1 * Math.abs(Math.sin((t - FALL) * 18)) * k;
           P.eye = 'closed'; P.cheek = 1.6; P.armL = 1.25 + 0.06 * Math.sin(t * 9); P.armR = -1.25 - 0.06 * Math.sin(t * 9 + 1);
           P.sq = 1 + 0.02 * Math.sin(t * 3);
         } else {
-          const u = clamp01((tt - 2.4) / 0.55);
+          const u = clamp01((t - UP) / 0.55);
           P.tip = TIP * (1 - easeOutBack(u)); P.y = Math.sin(u * Math.PI) * 0.06; P.cheek = 1.6 - 0.6 * u;
           if (u >= 1 && !f.up) { f.up = true; SQ.v -= 2.5; }
         }
