@@ -2,88 +2,112 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>책상 위 AR 캐릭터</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>책상 위 젤리 친구</title>
 <style>
-  html, body {
-    margin: 0; height: 100%; overflow: hidden;
-    background: #fdf1e7;
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    -webkit-user-select: none; user-select: none;
-  }
-  #app { position: fixed; inset: 0; }
-  #app canvas { display: block; touch-action: none; }
+:root{--g1:#eaffc9;--g2:#c8f28c;--g3:#8fdc3a;--ink:#1f4a06;--yel:#ffe45c;--cream:#fffbe8;--sub:#4f7a22}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#d9f5ae;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;-webkit-user-select:none;user-select:none}
+#camvid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:none;background:#000}
+#app{position:fixed;inset:0;z-index:1}
+#app canvas{display:block;touch-action:none}
+.hidden{display:none!important}
 
-  /* 미리보기 화면 UI */
-  #ui {
-    position: fixed; inset: 0; pointer-events: none;
-    display: flex; flex-direction: column; justify-content: space-between;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
-    box-sizing: border-box;
-  }
-  .title {
-    align-self: center;
-    background: rgba(255,255,255,0.85); color: #5b4a4f;
-    padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 15px;
-    box-shadow: 0 2px 10px rgba(120,80,80,0.12);
-  }
-  .panel {
-    align-self: center; width: min(420px, 100%);
-    background: rgba(255,255,255,0.9); border-radius: 20px;
-    padding: 14px 16px 16px; box-sizing: border-box; text-align: center;
-    box-shadow: 0 4px 18px rgba(120,80,80,0.15); pointer-events: auto;
-  }
-  #msg { margin: 0 0 12px; color: #6b5a5f; font-size: 14px; line-height: 1.5; white-space: pre-line; }
-  #msg:empty { display: none; }
-  .btn {
-    display: inline-block; border: 0; border-radius: 999px;
-    background: #ff8fa8; color: #fff; font-size: 18px; font-weight: 700;
-    padding: 14px 36px; cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 0 #e8718d;
-  }
-  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #e8718d; }
-  .hidden { display: none !important; }
-  #ql img { display: block; width: 240px; height: 56px; }
-  #ql.loading { opacity: 0.5; pointer-events: none; }
+/* ── 시작 화면 ── */
+#intro{position:fixed;inset:0;z-index:3;overflow:hidden;background:radial-gradient(120% 70% at 50% 35%,#f6ffe4 0%,var(--g1) 40%,var(--g2) 100%);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:max(56px,env(safe-area-inset-top)) 24px max(28px,env(safe-area-inset-bottom))}
+#intro .dots{position:absolute;inset:0;background-image:radial-gradient(rgba(143,220,58,.25) 3px,transparent 3.5px);background-size:28px 28px;pointer-events:none}
+.blob{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);pointer-events:none}
+.deco{position:absolute;pointer-events:none}
+.hello{position:relative;text-align:center;color:var(--ink)}
+.hello b{display:block;font-size:30px;font-weight:900;letter-spacing:-.5px}
+.hello span{display:block;margin-top:8px;font-size:15px;color:var(--sub)}
+.stagepic{position:relative;width:240px;height:260px;flex:none}
+.stagepic .plate{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:220px;height:44px;border-radius:50%;background:radial-gradient(#b9e57a,#9bd456);border:3px solid var(--ink)}
+.stagepic svg.jelly{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);animation:boing 1.1s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes boing{0%,100%{transform:translateX(-50%) scale(1.06,.94)}50%{transform:translateX(-50%) translateY(-14px) scale(.96,1.04)}}
+@media (prefers-reduced-motion:reduce){.stagepic svg.jelly{animation:none}}
+.ctas{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+.cta{display:flex;align-items:center;justify-content:center;width:min(270px,100%);height:66px;border-radius:999px;background:linear-gradient(#a8ea55,var(--g3));border:3px solid var(--ink);box-shadow:inset 0 6px 0 rgba(255,255,255,.55),0 6px 0 var(--ink);font-weight:900;font-size:21px;line-height:1;color:var(--ink);cursor:pointer;text-decoration:none;font-family:inherit}
+.cta:active{transform:translateY(4px);box-shadow:inset 0 6px 0 rgba(255,255,255,.55),0 2px 0 var(--ink)}
+.cta[disabled]{opacity:.55;pointer-events:none}
+#ql{display:block;line-height:0}
+#ql img{width:270px;height:72px;display:block}
+#ql.wait{opacity:.55;pointer-events:none}
+.sub{background:none;border:0;font-weight:600;font-size:15px;line-height:1;color:var(--sub);padding:10px;cursor:pointer;font-family:inherit}
+#intro-msg{position:relative;font-size:12.5px;color:#5e8338;text-align:center;line-height:1.5;white-space:pre-line;min-height:19px}
 
-  /* AR 실행 중 화면 위에 뜨는 UI (안드로이드) */
-  #xr-overlay { display: none; }
-  #xr-overlay.on { display: block; position: fixed; inset: 0; pointer-events: none; }
-  #xr-hint {
-    position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%);
-    background: rgba(0,0,0,0.55); color: #fff; font-size: 15px;
-    padding: 10px 18px; border-radius: 999px; white-space: nowrap;
-  }
-  #xr-close {
-    position: absolute; top: 16px; right: 16px; pointer-events: auto;
-    background: rgba(0,0,0,0.55); color: #fff; border: 0; border-radius: 999px;
-    font-size: 15px; padding: 10px 16px; font-family: inherit;
-  }
+/* ── 놀이 화면 (프레임 + 버튼) ── */
+#hud{position:fixed;inset:0;z-index:2;pointer-events:none;display:none}
+#hud.on{display:block}
+.frame{position:absolute;inset:0;border:14px solid var(--g2);border-radius:44px;box-shadow:inset 0 0 0 3px var(--ink),inset 0 0 0 9px rgba(255,255,255,.5)}
+@media (min-width:700px){.frame{border-radius:28px}}
+#hint{position:absolute;left:50%;top:max(58px,calc(env(safe-area-inset-top) + 40px));transform:translateX(-50%);background:rgba(255,251,232,.95);border:2.5px solid var(--ink);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;max-width:calc(100% - 140px);overflow:hidden;text-overflow:ellipsis}
+#close{position:absolute;top:max(50px,calc(env(safe-area-inset-top) + 32px));right:30px;width:46px;height:46px;border-radius:50%;background:var(--cream);border:3px solid var(--ink);font-weight:900;font-size:20px;line-height:1;color:var(--ink);pointer-events:auto;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+#bar{position:absolute;left:24px;right:24px;bottom:max(32px,calc(env(safe-area-inset-bottom) + 18px));max-width:460px;margin:0 auto;height:108px;border-radius:30px;background:linear-gradient(#f2ffd9,var(--g2));border:3px solid var(--ink);box-shadow:inset 0 5px 0 rgba(255,255,255,.7),0 5px 0 var(--ink);display:flex;justify-content:space-around;align-items:center;padding:0 4px;pointer-events:auto}
+#bar button{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;padding:4px 0;font-weight:800;font-size:12px;line-height:1;color:var(--ink);cursor:pointer;font-family:inherit;min-width:56px}
+#bar i{width:52px;height:52px;border-radius:50%;background:var(--cream);border:3px solid var(--ink);box-shadow:inset 0 -5px 0 rgba(143,220,58,.35);display:flex;align-items:center;justify-content:center;transition:transform .12s}
+#bar button.on i{background:var(--yel)}
+#bar button:active i{transform:scale(.9)}
+#bar.off{opacity:.5;pointer-events:none}
 </style>
 <script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-  }
-}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
 </script>
 </head>
 <body>
+<video id="camvid" playsinline muted autoplay></video>
 <div id="app"></div>
 
-<div id="ui">
-  <div class="title">책상 위 AR 캐릭터</div>
-  <div class="panel">
-    <p id="msg">불러오는 중…</p>
-    <button id="ar-btn" class="btn hidden">AR로 보기</button>
-    <a id="ql" class="hidden loading" rel="ar" href="#" download="character.usdz"><img id="ql-img" alt="AR로 보기"></a>
+<!-- 놀이 화면 UI (안드로이드 AR에서는 이 부분이 카메라 위에 떠요) -->
+<div id="hud">
+  <div class="frame"></div>
+  <svg class="deco" style="left:4px;top:4px" width="54" height="54" viewBox="0 0 24 24"><path d="M12 2l2.6 6.6L21 9.3l-5 4.4 1.6 6.8L12 17l-5.6 3.5L8 13.7 3 9.3l6.4-.7z" fill="#ffe45c" stroke="#1f4a06" stroke-width="1.4" stroke-linejoin="round"/></svg>
+  <svg class="deco" style="right:6px;top:22%" width="34" height="34" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ffb3c7" stroke="#1f4a06" stroke-width="1.6"/></svg>
+  <svg class="deco" style="left:2px;top:50%" width="30" height="38" viewBox="0 0 20 26"><path d="M10 2C10 2 2 12 2 17a8 8 0 0 0 16 0C18 12 10 2 10 2z" fill="#dff7ff" stroke="#1f4a06" stroke-width="1.6"/></svg>
+  <svg class="deco" style="right:2px;top:66%" width="40" height="40" viewBox="0 0 24 24"><path d="M12 2l2.6 6.6L21 9.3l-5 4.4 1.6 6.8L12 17l-5.6 3.5L8 13.7 3 9.3l6.4-.7z" fill="#c8f28c" stroke="#1f4a06" stroke-width="1.4" stroke-linejoin="round"/></svg>
+  <div id="hint">책상을 천천히 비춰 주세요</div>
+  <button id="close" aria-label="닫기">✕</button>
+  <div id="bar" class="off">
+    <button data-act="jump"><i><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1f4a06" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></i>점프</button>
+    <button data-act="pat"><i><svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ff8fb0" stroke="#1f4a06" stroke-width="2"/></svg></i>쓰다듬기</button>
+    <button data-act="spin"><i><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1f4a06" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></i>빙글</button>
+    <button data-act="thud"><i><svg width="30" height="26" viewBox="0 0 30 24"><text x="15" y="18" text-anchor="middle" font-weight="900" font-size="15" fill="#1f4a06">쿵</text></svg></i>쿵</button>
+    <button data-act="surprise"><i><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1f4a06" stroke-width="3" stroke-linecap="round"><path d="M12 4v10"/><circle cx="12" cy="19.5" r="1.2" fill="#1f4a06"/></svg></i>놀라기</button>
   </div>
 </div>
 
-<div id="xr-overlay">
-  <button id="xr-close">✕ 종료</button>
-  <div id="xr-hint">책상을 천천히 비춰 주세요</div>
+<!-- 시작 화면 -->
+<div id="intro">
+  <div class="dots"></div>
+  <div class="blob" style="width:140px;height:140px;left:-40px;top:40px"></div>
+  <div class="blob" style="width:90px;height:90px;right:-20px;top:38%"></div>
+  <div class="blob" style="width:60px;height:60px;left:30px;bottom:26%"></div>
+  <svg class="deco" style="left:40px;top:30%" width="34" height="34" viewBox="0 0 24 24"><path d="M12 2l2.6 6.6L21 9.3l-5 4.4 1.6 6.8L12 17l-5.6 3.5L8 13.7 3 9.3l6.4-.7z" fill="#ffe45c" stroke="#1f4a06" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <svg class="deco" style="right:44px;top:26%" width="26" height="26" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ffb3c7" stroke="#1f4a06" stroke-width="1.6"/></svg>
+  <svg class="deco" style="right:60px;top:60%" width="22" height="28" viewBox="0 0 20 26"><path d="M10 2C10 2 2 12 2 17a8 8 0 0 0 16 0C18 12 10 2 10 2z" fill="#dff7ff" stroke="#1f4a06" stroke-width="1.6"/></svg>
+  <div class="hello"><b>안녕! 같이 놀자</b><span>책상 위에 친구를 불러 볼까요?</span></div>
+  <div class="stagepic"><div class="plate"></div>
+    <!-- 시작 화면용 젤리 실루엣 (그림) -->
+    <svg class="jelly" width="150" height="190" viewBox="0 0 150 190">
+      <ellipse cx="50" cy="176" rx="24" ry="11" fill="#7fe02a" stroke="#1f4a06" stroke-width="3"/>
+      <ellipse cx="100" cy="176" rx="24" ry="11" fill="#7fe02a" stroke="#1f4a06" stroke-width="3"/>
+      <path d="M20 112 Q2 126 10 140 Q24 136 30 122Z" fill="#7fe02a" stroke="#1f4a06" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M130 112 Q148 126 140 140 Q126 136 120 122Z" fill="#7fe02a" stroke="#1f4a06" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M22 80 Q22 14 75 14 Q128 14 128 80 L128 150 Q128 172 75 172 Q22 172 22 150Z" fill="#8ff23a" stroke="#1f4a06" stroke-width="3"/>
+      <path d="M36 70 Q38 30 70 26" fill="none" stroke="#d8ff9e" stroke-width="7" stroke-linecap="round" opacity=".8"/>
+      <circle cx="52" cy="66" r="6" fill="#0b1a3a"/><circle cx="98" cy="66" r="6" fill="#0b1a3a"/>
+      <ellipse cx="38" cy="84" rx="8" ry="6" fill="#d6e84a"/><ellipse cx="112" cy="84" rx="8" ry="6" fill="#d6e84a"/>
+      <rect x="50" y="76" width="50" height="11" rx="5.5" fill="#b7ff62" stroke="#1f4a06" stroke-width="2"/>
+      <rect x="50" y="88" width="50" height="11" rx="5.5" fill="#b7ff62" stroke="#1f4a06" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="ctas">
+    <button id="btn-ar" class="cta hidden">책상에 올려놓기</button>
+    <a id="ql" class="hidden wait" rel="ar" href="#"><img id="ql-img" alt="책상에 올려놓기"></a>
+    <button id="btn-3d" class="cta hidden">같이 놀기</button>
+    <button id="btn-cam" class="sub hidden">카메라로 놀아주기 ›</button>
+    <div id="intro-msg">친구를 불러오는 중…</div>
+  </div>
 </div>
 
 <script type="module">
@@ -93,430 +117,561 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { USDZExporter } from 'three/addons/exporters/USDZExporter.js';
 
 /* ───────── 설정 ───────── */
-const AR_HEIGHT_M = 0.10;                     // AR에서 캐릭터 키 (미터). 0.10 = 10cm
-const CUSTOM_GLB  = 'models/character.glb';   // 블렌더 모델이 완성되면 이 이름으로 넣기
-const CUSTOM_USDZ = 'models/character.usdz';  // 아이폰용 (애니메이션 포함)
+const MODEL_URL = 'character.glb';
+const MODEL_USDZ = 'character.usdz';   // 있으면 아이폰 '책상에 올려놓기'에 사용
+const AR_HEIGHT_M = 0.10;                     // AR에서 캐릭터 키 10cm
 
 /* ───────── 기기 구분 ───────── */
 const UA = navigator.userAgent;
 const isIOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const isIOSChrome = isIOS && /CriOS/.test(UA);
 const isMobile = isIOS || /Android|Mobi/i.test(UA);
-
 const $ = (id) => document.getElementById(id);
-const setMsg = (t) => { $('msg').textContent = t; };
+const introMsg = (t) => { $('intro-msg').textContent = t; };
 
-/* ───────── 기본 장면 ───────── */
+/* ───────── 장면 ───────── */
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.xr.enabled = true;
 $('app').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const PREVIEW_BG = new THREE.Color('#fdf1e7');
-scene.background = PREVIEW_BG;
-
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.01, 50);
-camera.position.set(0, 0.9, 2.6);
-
+const BG = new THREE.Color().setRGB(1.0, 0.92, 0.74, THREE.LinearSRGBColorSpace);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.01, 60);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0.45, 0);
-controls.enableDamping = true;
-controls.enablePan = false;
-controls.minDistance = 1.2;
-controls.maxDistance = 5;
-controls.maxPolarAngle = Math.PI * 0.49;
-controls.update();
+controls.enableDamping = true; controls.enablePan = false;
+controls.minDistance = 2; controls.maxDistance = 7; controls.maxPolarAngle = Math.PI * 0.47;
+controls.enabled = false;
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0xe8d8cc, 1.6));
-const sun = new THREE.DirectionalLight(0xffffff, 1.6);
-sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
-sun.shadow.radius = 4;
-sun.shadow.bias = -0.0005;
-scene.add(sun, sun.target);
-
-function aimSun(pos, s) {
-  sun.position.set(pos.x + 1.2 * s, pos.y + 3 * s, pos.z + 1.5 * s);
-  sun.target.position.copy(pos);
-  sun.target.updateMatrixWorld();
-  const c = sun.shadow.camera;
-  c.left = -1.2 * s; c.right = 1.2 * s; c.top = 1.2 * s; c.bottom = -1.2 * s;
-  c.near = 0.1 * s; c.far = 8 * s;
-  c.updateProjectionMatrix();
-}
-aimSun(new THREE.Vector3(), 1);
-
-// 미리보기용 바닥 (AR에서는 숨김)
-const previewFloor = new THREE.Mesh(
-  new THREE.CircleGeometry(1.1, 64).rotateX(-Math.PI / 2),
-  new THREE.MeshStandardMaterial({ color: '#f6dfcf', roughness: 1 })
-);
-previewFloor.receiveShadow = true;
+// 미리보기용 바닥 원판
+const floorDisc = new THREE.Mesh(new THREE.CircleGeometry(1.7, 64).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(0.62, 0.86, 0.33, THREE.LinearSRGBColorSpace) }));
+const discRim = new THREE.Mesh(new THREE.RingGeometry(1.7, 1.76, 64).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(0.02, 0.12, 0, THREE.LinearSRGBColorSpace) }));
+discRim.position.y = 0.001;
+const previewFloor = new THREE.Group(); previewFloor.add(floorDisc, discRim); previewFloor.visible = false;
 scene.add(previewFloor);
 
-// stage = 캐릭터 + 그림자판. AR에서는 이 묶음을 책상 위로 옮기고 10cm로 줄임
-const stage = new THREE.Group();
-scene.add(stage);
-const shadowPlane = new THREE.Mesh(
-  new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2),
-  new THREE.ShadowMaterial({ opacity: 0.25 })
-);
-shadowPlane.receiveShadow = true;
-shadowPlane.visible = false;
-stage.add(shadowPlane);
-
-/* ───────── 임시 캐릭터 (코드로 만든 동글동글 캐릭터) ───────── */
-function buildTempCharacter() {
-  const M = (c, r = 0.6) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: 0 });
-  const mBody = M('#fffaf2', 0.75), mPink = M('#ffc9d4', 0.7), mCheek = M('#ffb0c0', 0.8);
-  const mDark = M('#2a2326', 0.35), mWhite = M('#ffffff', 0.3);
-
-  const root = new THREE.Group();
-  const pivot = new THREE.Group();          // 통통 튀기·찌그러지기 기준점 (발밑)
-  root.add(pivot);
-
-  const sphere = (mat, seg = 32) => {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(1, seg, Math.round(seg * 0.75)), mat);
-    m.castShadow = true;
-    return m;
-  };
-
-  // 몸통 = 머리 (찹쌀떡 모양 하나)
-  const RX = 0.42, RY = 0.378, RZ = 0.40, CY = RY;
-  const surfZ = (x, y) => RZ * Math.sqrt(Math.max(0, 1 - (x / RX) ** 2 - ((y - CY) / RY) ** 2));
-  const body = sphere(mBody, 64);
-  body.scale.set(RX, RY, RZ);
-  body.position.y = CY;
-  pivot.add(body);
-
-  // 귀
-  const ears = [];
-  for (const side of [-1, 1]) {
-    const ear = new THREE.Group();
-    ear.position.set(side * 0.2, 0.70, -0.02);
-    ear.rotation.z = -side * 0.35;
-    const outer = sphere(mBody); outer.scale.set(0.11, 0.15, 0.08); outer.position.y = 0.06;
-    const inner = sphere(mPink); inner.scale.set(0.06, 0.09, 0.03); inner.position.set(0, 0.06, 0.055);
-    inner.castShadow = false;
-    ear.add(outer, inner);
-    pivot.add(ear);
-    ears.push(ear);
-  }
-
-  // 눈
-  const eyes = [];
-  for (const side of [-1, 1]) {
-    const x = side * 0.13, y = 0.44;
-    const eye = new THREE.Group();
-    eye.position.set(x, y, surfZ(x, y) - 0.012);
-    const ball = sphere(mDark, 24); ball.scale.set(0.042, 0.05, 0.025);
-    const hi = sphere(mWhite, 12); hi.scale.setScalar(0.013); hi.position.set(0.012, 0.018, 0.02);
-    hi.castShadow = false;
-    eye.add(ball, hi);
-    pivot.add(eye);
-    eyes.push(eye);
-  }
-
-  // 볼터치
-  for (const side of [-1, 1]) {
-    const x = side * 0.24, y = 0.37;
-    const cheek = sphere(mCheek, 24);
-    cheek.scale.set(0.06, 0.035, 0.02);
-    cheek.position.set(x, y, surfZ(x, y) - 0.008);
-    cheek.rotation.y = side * 0.55;
-    cheek.castShadow = false;
-    pivot.add(cheek);
-  }
-
-  // 입 (작은 웃는 입)
-  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.026, 0.007, 8, 24, Math.PI), mDark);
-  mouth.rotation.z = Math.PI;
-  mouth.position.set(0, 0.395, surfZ(0, 0.395) + 0.002);
-  pivot.add(mouth);
-
-  // 팔
-  const arms = [];
-  for (const side of [-1, 1]) {
-    const p = new THREE.Group();
-    p.position.set(side * 0.33, 0.33, 0.1);
-    const a = sphere(mBody); a.scale.set(0.07, 0.09, 0.07); a.position.set(side * 0.06, -0.05, 0);
-    p.add(a);
-    p.rotation.z = side * 0.2;
-    pivot.add(p);
-    arms.push(p);
-  }
-
-  // 발
-  for (const side of [-1, 1]) {
-    const f = sphere(mBody); f.scale.set(0.09, 0.05, 0.11); f.position.set(side * 0.15, 0.04, 0.12);
-    pivot.add(f);
-  }
-
-  const smooth = (x) => x * x * (3 - 2 * x);
-  const HOP = 1.1; // 한 번 튀는 데 걸리는 시간(초)
-
-  function update(t) {
-    // 통통 튀기 + 착지할 때 살짝 찌그러짐
-    const p = Math.sin(((t % HOP) / HOP) * Math.PI * 2);
-    pivot.position.y = Math.max(0, p) * 0.07;
-    const sq = p < 0 ? 1 + 0.08 * p : 1 + 0.025 * p;
-    const wide = 1 + (1 - sq) * 0.6;
-    pivot.scale.set(wide, sq, wide);
-    pivot.rotation.z = Math.sin(t * 1.4) * 0.05;
-
-    // 5초마다 오른손 흔들기
-    const c = t % 5;
-    const w = smooth(c < 0.4 ? c / 0.4 : c < 2.6 ? 1 : c < 3.0 ? 1 - (c - 2.6) / 0.4 : 0);
-    arms[1].rotation.z = 0.2 + w * 1.7 + w * 0.3 * Math.sin(t * 11);
-    arms[0].rotation.z = -0.2 - 0.12 * Math.sin((t * Math.PI * 2) / HOP);
-
-    // 귀 쫑긋
-    ears[0].rotation.z = 0.35 + 0.08 * Math.sin(t * 3);
-    ears[1].rotation.z = -0.35 - 0.08 * Math.sin(t * 3 + 0.5);
-
-    // 눈 깜빡
-    const b = (t % 3.3) < 0.12 ? 0.15 : 1;
-    eyes.forEach((e) => { e.scale.y = b; });
-  }
-  update(0);
-
-  return { root, update, custom: false };
-}
-
-/* ───────── 블렌더 모델이 있으면 교체 ───────── */
-async function tryLoadCustom() {
-  try {
-    const gltf = await new GLTFLoader().loadAsync(CUSTOM_GLB);
-    const model = gltf.scene;
-    model.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-    // 키를 1로 맞추고 발이 바닥(y=0)에 닿게 정렬
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    model.scale.setScalar(1 / (size.y || 1));
-    box.setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    model.position.x -= center.x;
-    model.position.z -= center.z;
-    model.position.y -= box.min.y;
-    const root = new THREE.Group();
-    root.add(model);
-    let mixer = null;
-    if (gltf.animations.length) {
-      mixer = new THREE.AnimationMixer(model);
-      mixer.clipAction(gltf.animations[0]).play();
-    }
-    return { root, update: (t, dt) => mixer && mixer.update(dt), custom: true };
-  } catch (e) {
-    return null; // 모델이 없으면 임시 캐릭터 그대로 사용
-  }
-}
-
-let character = buildTempCharacter();
-stage.add(character.root);
-
-const customReady = tryLoadCustom().then((custom) => {
-  if (custom) {
-    stage.remove(character.root);
-    character = custom;
-    stage.add(character.root);
-  }
-});
-
-/* ───────── 아이폰: Quick Look (USDZ) ───────── */
-function exportUSDZ(obj) {
-  const exporter = new USDZExporter();
-  return new Promise((resolve, reject) => {
-    if (exporter.parseAsync) { exporter.parseAsync(obj).then(resolve, reject); return; }
-    const r = exporter.parse(obj, resolve, reject);
-    if (r && typeof r.then === 'function') r.then(resolve, reject);
+/* ───────── 툰 재질 (블렌더 노드 색 그대로) ───────── */
+const L = (r, g, b) => new THREE.Color().setRGB(r, g, b, THREE.LinearSRGBColorSpace);
+const PALETTE = {
+  Jelly_Body:   { shadow: L(0.165,0.581,0.048), lit: L(0.321,0.971,0.074), rim: L(0.75,1,0.295),  spec: 0.9 },
+  Jelly_Green:  { shadow: L(0.165,0.581,0.048), lit: L(0.321,0.971,0.074), rim: L(0.75,1,0.295),  spec: 0.9 },
+  Jelly_Lip:    { shadow: L(0.295,0.75,0.087),  lit: L(0.581,1,0.191),     rim: L(0.88,1,0.49),   spec: 0.6 },
+  Eye_Navy:     { shadow: L(0.0,0.01,0.06),     lit: L(0.01,0.03,0.12),    rim: L(0.01,0.03,0.12),spec: 1.0 },
+  Cheek_Yellow: { shadow: L(0.45,0.62,0.05),    lit: L(0.62,0.82,0.1),     rim: L(0.62,0.82,0.1), spec: 0.3 },
+};
+const OUTLINE = L(0.02, 0.12, 0.0);
+function toonMaterial(p) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uShadow: { value: p.shadow }, uLit: { value: p.lit }, uRim: { value: p.rim }, uSpec: { value: p.spec },
+      uLight: { value: new THREE.Vector3(0.45, 0.75, 0.5).normalize() } },
+    vertexShader: `varying vec3 vN; varying vec3 vV;
+      void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform vec3 uShadow, uLit, uRim, uLight; uniform float uSpec; varying vec3 vN; varying vec3 vV;
+      void main(){ vec3 n = normalize(vN); vec3 v = normalize(vV);
+        float d = dot(n, uLight) * 0.5 + 0.5;
+        vec3 c = mix(uShadow, uLit, smoothstep(0.45, 0.5, d));
+        float rim = smoothstep(0.55, 0.75, 1.0 - max(dot(n, v), 0.0));
+        c = mix(c, uRim, rim * 0.7);
+        float sp = smoothstep(0.965, 0.975, dot(n, normalize(uLight + v)));
+        c = mix(c, vec3(1.0, 1.0, 0.88), sp * uSpec);
+        gl_FragColor = vec4(c, 1.0);
+        #include <colorspace_fragment>
+      }`,
   });
 }
+const outlineMat = new THREE.MeshBasicMaterial({ color: OUTLINE });
+const eyeMat = toonMaterial(PALETTE.Eye_Navy);
 
-async function prepareQuickLook() {
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="56" viewBox="0 0 240 56">' +
-    '<rect width="240" height="56" rx="28" fill="#ff8fa8"/>' +
-    '<text x="120" y="36" font-family="-apple-system, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="middle">AR로 보기</text></svg>';
-  $('ql-img').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  $('ql').classList.remove('hidden');
+/* ───────── 캐릭터 뼈대 ─────────
+   stage(위치·방향·크기) → hopper(점프 높이·기울기) → tipper(넘어지기) → squasher(찌부) → model */
+const stage = new THREE.Group(); stage.visible = false; scene.add(stage);
+const hopper = new THREE.Group(); stage.add(hopper);
+const tipper = new THREE.Group(); hopper.add(tipper);
+const squasher = new THREE.Group(); tipper.add(squasher);
 
-  await customReady;
-
-  let url = null;
-  try {
-    const r = await fetch(CUSTOM_USDZ, { method: 'HEAD' });
-    if (r.ok) url = CUSTOM_USDZ;
-  } catch (e) { /* 없음 */ }
-
-  if (!url) {
-    // 아이폰용 USDZ를 페이지에서 바로 만들기 (임시 캐릭터는 움직이지 않는 상태로 들어감)
-    const holder = new THREE.Group();
-    holder.add(character.custom ? character.root.clone(true) : buildTempCharacter().root);
-    holder.scale.setScalar(AR_HEIGHT_M);
-    holder.updateMatrixWorld(true);
-    const data = await exportUSDZ(holder);
-    url = URL.createObjectURL(new Blob([data], { type: 'model/vnd.usdz+zip' }));
-  }
-  $('ql').href = url;
-  $('ql').classList.remove('loading');
+// 바닥 그림자 (동그란 그림자)
+function radialTex() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'); const gr = g.createRadialGradient(64, 64, 8, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(40,60,10,0.45)'); gr.addColorStop(1, 'rgba(40,60,10,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ map: radialTex(), transparent: true, depthWrite: false }));
+shadow.position.y = 0.004; shadow.renderOrder = -1; stage.add(shadow);
+
+let model = null, parts = {}, base = {}, frontZ = 0.3, chevrons = {}, meshes = [];
+const PART_NAMES = ['Jelly_Arm_L','Jelly_Arm_R','Jelly_Foot_L','Jelly_Foot_R','Jelly_Eye_L','Jelly_Eye_R','Jelly_Cheek_L','Jelly_Cheek_R','Jelly_Body'];
+
+function stroke(x1, y1, x2, y2, r) {
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  const m = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 10), eyeMat);
+  m.position.set((x1 + x2) / 2, (y1 + y2) / 2, 0);
+  m.rotation.z = Math.atan2(y2 - y1, x2 - x1) - Math.PI / 2;
+  return m;
+}
+function makeEyeShapes(eye, side) {
+  // side: +1 = 캐릭터 왼쪽(화면 오른쪽) → '<',  -1 = 캐릭터 오른쪽(화면 왼쪽) → '>'
+  const body = parts.Jelly_Body;
+  const happy = new THREE.Group(), closed = new THREE.Group();
+  const w = 0.042, h = 0.034, r = 0.011;
+  if (side < 0) { happy.add(stroke(-w, h, w, 0, r), stroke(-w, -h, w, 0, r)); }      // >
+  else { happy.add(stroke(w, h, -w, 0, r), stroke(w, -h, -w, 0, r)); }              // <
+  closed.add(stroke(-w * 1.1, 0.004, w * 1.1, 0.004, r));
+  for (const g of [happy, closed]) {
+    g.position.copy(eye.position); g.position.z += 0.012;
+    g.rotation.y = side * 0.32; g.visible = false; body.add(g);
+  }
+  return { happy, closed };
+}
+
+function setupModel(gltf) {
+  model = gltf.scene;
+  model.traverse((o) => {
+    if (o.name) parts[o.name] = o;
+    if (o.isMesh) {
+      const n = o.material.name;
+      o.material = n === 'Jelly_Outline' ? outlineMat : (PALETTE[n] ? toonMaterial(PALETTE[n]) : o.material);
+      o.frustumCulled = false; meshes.push(o);
+    }
+  });
+  // 키를 1로 맞추고 발밑을 바닥(0)에
+  const box = new THREE.Box3().setFromObject(model); const size = box.getSize(new THREE.Vector3());
+  const s = 1 / size.y; model.scale.setScalar(s);
+  box.setFromObject(model); const c = box.getCenter(new THREE.Vector3());
+  model.position.set(-c.x, -box.min.y, -c.z);
+  box.setFromObject(model);
+  frontZ = box.max.z * 0.85;
+  tipper.position.z = frontZ; squasher.position.z = -frontZ;   // 넘어질 때 앞쪽 발끝을 축으로
+  squasher.add(model);
+  for (const n of PART_NAMES) if (parts[n]) base[n] = { p: parts[n].position.clone(), q: parts[n].quaternion.clone(), s: parts[n].scale.clone() };
+  if (parts.Jelly_Eye_L) chevrons.L = makeEyeShapes(parts.Jelly_Eye_L, +1);
+  if (parts.Jelly_Eye_R) chevrons.R = makeEyeShapes(parts.Jelly_Eye_R, -1);
+}
+
+/* ───────── 말 풍선·하트 (스프라이트) ───────── */
+function heartTex() {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  g.translate(64, 70); g.lineJoin = 'round';
+  const path = () => { g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-60, 0, -40, -52, 0, -22); g.bezierCurveTo(40, -52, 60, 0, 0, 40); g.closePath(); };
+  path(); g.fillStyle = '#ff8fb0'; g.fill(); g.lineWidth = 9; g.strokeStyle = '#1f4a06'; g.stroke();
+  g.beginPath(); g.ellipse(-20, -18, 9, 6, -0.6, 0, Math.PI * 2); g.fillStyle = 'rgba(255,255,255,.75)'; g.fill();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function textTex(txt, fill) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 192; const g = c.getContext('2d');
+  g.font = '900 120px -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.lineWidth = 22; g.strokeStyle = '#1f4a06'; g.strokeText(txt, 128, 100);
+  g.fillStyle = fill; g.fillText(txt, 128, 100);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const TEX = { heart: heartTex(), thud: textTex('쿵!', '#ffe45c'), wow: textTex('!', '#ffe45c') };
+const fx = [];
+function spawn(kind, pos, opts = {}) {
+  const mat = new THREE.SpriteMaterial({ map: TEX[kind], transparent: true, depthWrite: false, depthTest: false });
+  const sp = new THREE.Sprite(mat); sp.position.copy(pos); sp.renderOrder = 10;
+  if (kind !== 'heart') sp.scale.set(0.001, 0.001, 1);
+  stage.add(sp);
+  fx.push({ sp, kind, t: 0, life: opts.life ?? 1.2, size: opts.size ?? 0.2, vx: opts.vx ?? 0 });
+}
+function updateFx(dt) {
+  for (let i = fx.length - 1; i >= 0; i--) {
+    const f = fx[i]; f.t += dt; const u = f.t / f.life;
+    if (f.kind === 'heart') {
+      f.sp.position.y += dt * 0.55; f.sp.position.x += f.vx * dt;
+      const s = f.size * (0.6 + 0.4 * Math.min(1, u * 4)); f.sp.scale.set(s, s, 1);
+      f.sp.material.opacity = u > 0.6 ? 1 - (u - 0.6) / 0.4 : 1;
+    } else {
+      const pop = u < 0.15 ? elasticOut(u / 0.15) : 1;
+      const s = f.size * pop; f.sp.scale.set(s * 4 / 3, s, 1);
+      f.sp.material.opacity = u > 0.75 ? 1 - (u - 0.75) / 0.25 : 1;
+    }
+    if (u >= 1) { stage.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); }
+  }
+}
+
+/* ───────── 말랑말랑 스프링 ───────── */
+const spring = (x = 0) => ({ x, v: 0 });
+const SQ = spring(1), LEAN = spring(0), ROLL = spring(0);
+function stepSpring(s, target, k, c, dt) { const a = -k * (s.x - target) - c * s.v; s.v += a * dt; s.x += s.v * dt; }
+const easeInOut = (u) => u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+const easeOutBack = (u) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); };
+function elasticOut(u) { if (u <= 0) return 0; if (u >= 1) return 1; return Math.pow(2, -10 * u) * Math.sin((u * 10 - 0.75) * (2 * Math.PI) / 3) + 1; }
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+
+/* ───────── 동작 ───────── */
+let act = null, walk = null, popT = 1, S = 1;
+const DUR = { jump: 1.1, pat: 2.2, spin: 1.25, thud: 3.55, surprise: 1.5 };
+function play(type) {
+  if (!placed) return;
+  walk = null; act = { type, t: 0, flags: {} };
+  if (type === 'pat') SQ.v -= 1.5;
+  document.querySelectorAll('#bar button').forEach((b) => b.classList.toggle('on', b.dataset.act === type));
+}
+function endAct() { act = null; document.querySelectorAll('#bar button').forEach((b) => b.classList.remove('on')); }
+
+const tmpV = new THREE.Vector3(), tmpQ = new THREE.Quaternion(), Z = new THREE.Vector3(0, 0, 1), X = new THREE.Vector3(1, 0, 0);
+let breathT = 0;
+
+function animate(dt) {
+  breathT += dt;
+  // 기본 자세 값
+  const P = { y: 0, sq: 1 + 0.018 * Math.sin(breathT * 2.4), lean: 0, roll: 0, spin: 0, tip: 0,
+    armL: 0.08 * Math.sin(breathT * 2.4), armR: -0.08 * Math.sin(breathT * 2.4), footL: 0, footR: 0,
+    eye: 'normal', eyeScale: 1, cheek: 1, k: 170, c: 8.5 };
+
+  // 걷기
+  if (walk && !act) {
+    tmpV.subVectors(walk.target, stage.position); tmpV.y = 0;
+    const dist = tmpV.length();
+    if (dist < 0.03 * S) { walk = null; SQ.v -= 2.2; LEAN.v -= 1.5; }
+    else {
+      const want = Math.atan2(tmpV.x, tmpV.z);
+      let d = want - stage.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d));
+      stage.rotation.y += Math.sign(d) * Math.min(Math.abs(d), 9 * dt);
+      if (Math.abs(d) < 0.7) {
+        const speed = 1.5 * S * Math.min(1, 0.4 + dist / (0.5 * S));
+        stage.position.addScaledVector(tmpV.normalize(), Math.min(dist, speed * dt));
+      }
+      walk.phase += dt * 10;
+      const step = Math.floor(walk.phase / Math.PI);
+      if (step !== walk.step) { walk.step = step; SQ.v -= 1.3; }
+      const sw = Math.sin(walk.phase);
+      P.y = Math.abs(sw) * 0.07; P.roll = sw * 0.13; P.lean = 0.12;
+      P.armL = 0.35 * sw; P.armR = 0.35 * sw;
+      P.footL = Math.max(0, sw) * 0.05; P.footR = Math.max(0, -sw) * 0.05;
+    }
+  }
+
+  // 버튼 동작
+  if (act) {
+    act.t += dt; const t = act.t, f = act.flags;
+    switch (act.type) {
+      case 'jump': {
+        if (t < 0.18) { P.sq = 0.8; P.armL = -0.2; P.armR = 0.2; }
+        else if (t < 0.72) { const u = (t - 0.18) / 0.54; P.y = 4 * u * (1 - u) * 0.6; P.sq = 1.14 - 0.1 * u; P.armL = 1.2; P.armR = -1.2; P.footL = P.footR = 0.03; }
+        else if (!f.land) { f.land = true; SQ.v -= 4.2; LEAN.v += 0.8; }
+        break;
+      }
+      case 'pat': {
+        P.eye = 'happy'; P.cheek = 1.25;
+        P.sq = 1 + 0.05 * Math.sin(t * 13) * Math.max(0, 1 - t / 2.2);
+        P.roll = 0.12 * Math.sin(t * 6); P.armL = 0.55 + 0.1 * Math.sin(t * 12); P.armR = -0.55 - 0.1 * Math.sin(t * 12);
+        if (t < 1.5 && t >= (f.nextHeart ?? 0)) {
+          f.nextHeart = (f.nextHeart ?? 0) + 0.22;
+          spawn('heart', new THREE.Vector3((Math.random() - 0.5) * 0.5, 1.05 + Math.random() * 0.1, 0.15), { life: 1.3, size: 0.17 + Math.random() * 0.08, vx: (Math.random() - 0.5) * 0.25 });
+        }
+        break;
+      }
+      case 'spin': {
+        const u = clamp01(t / 1.0);
+        P.spin = easeInOut(u) * Math.PI * 2; P.y = Math.sin(u * Math.PI) * 0.12; P.sq = 1.06;
+        P.armL = 1.0; P.armR = -1.0; P.roll = Math.sin(u * Math.PI) * 0.1;
+        if (u >= 1 && !f.land) { f.land = true; SQ.v -= 2.5; ROLL.v += 1.2; }
+        break;
+      }
+      case 'thud': {
+        // 옆으로 돌아서(옆모습이 보이게) 앞으로 넘어지기 → 볼 찌부로 엎드려 있기 → 일어나서 다시 정면
+        const TIP = 1.48, T0 = 0.22;
+        const turnIn = easeInOut(clamp01(t / T0)), turnOut = easeInOut(clamp01((t - 3.15) / 0.35));
+        P.spin = Math.PI / 2 * (turnIn - turnOut);
+        const tt = t - T0;
+        if (tt < 0.12) { P.sq = 1.05; P.armL = 0.6; P.armR = -0.6; }
+        else if (tt < 0.45) { const u = (tt - 0.12) / 0.33; P.tip = TIP * u * u; P.armL = 1.5; P.armR = -1.5; P.footL = P.footR = 0.03; }
+        else if (tt < 2.4) {
+          if (!f.hit) { f.hit = true; SQ.v -= 4.5; spawn('thud', new THREE.Vector3(0, 0.75, 0.25), { life: 1.6, size: 0.42 }); }
+          const k = Math.exp(-(tt - 0.45) * 7);
+          P.tip = TIP - 0.1 * Math.abs(Math.sin((tt - 0.45) * 18)) * k;
+          P.eye = 'closed'; P.cheek = 1.6; P.armL = 1.25 + 0.06 * Math.sin(t * 9); P.armR = -1.25 - 0.06 * Math.sin(t * 9 + 1);
+          P.sq = 1 + 0.02 * Math.sin(t * 3);
+        } else {
+          const u = clamp01((tt - 2.4) / 0.55);
+          P.tip = TIP * (1 - easeOutBack(u)); P.y = Math.sin(u * Math.PI) * 0.06; P.cheek = 1.6 - 0.6 * u;
+          if (u >= 1 && !f.up) { f.up = true; SQ.v -= 2.5; }
+        }
+        break;
+      }
+      case 'surprise': {
+        if (t < 0.1) { P.sq = 0.85; }
+        else if (t < 0.55) {
+          if (!f.mark) { f.mark = true; spawn('wow', new THREE.Vector3(0.32, 1.32, 0.1), { life: 1.35, size: 0.34 }); }
+          const u = (t - 0.1) / 0.45; P.y = 4 * u * (1 - u) * 0.38; P.sq = 1.18; P.eyeScale = 1.45; P.armL = 1.7; P.armR = -1.7;
+        } else {
+          if (!f.land) { f.land = true; SQ.v -= 3.5; }
+          P.eyeScale = 1.35 - 0.35 * clamp01((t - 0.55) / 0.8); P.armL = 1.0 * Math.max(0, 1 - (t - 0.55) * 2); P.armR = -P.armL;
+          if (t < 1.15) P.roll = 0.05 * Math.sin(t * 70);
+        }
+        break;
+      }
+    }
+    if (act.t >= DUR[act.type]) endAct();
+  }
+
+  // 스프링 계산 (잘게 나눠서 안정적으로)
+  const n = Math.max(1, Math.ceil(dt / (1 / 120))), h = dt / n;
+  for (let i = 0; i < n; i++) {
+    stepSpring(SQ, P.sq, P.k, P.c, h);
+    stepSpring(LEAN, P.lean, 120, 9, h);
+    stepSpring(ROLL, P.roll, 140, 10, h);
+  }
+  const sq = THREE.MathUtils.clamp(SQ.x, 0.7, 1.3), wide = 1 / Math.sqrt(sq);   // 부피 유지
+  squasher.scale.set(wide, sq, wide);
+  hopper.position.y = P.y;
+  hopper.rotation.set(LEAN.x, P.spin, ROLL.x);
+  tipper.rotation.x = P.tip;
+
+  // 부위별 움직임 (살짝 늦게 따라오기)
+  const lag = (name, field, target, rate) => { const o = parts[name]; if (!o) return; o.userData[field] = THREE.MathUtils.damp(o.userData[field] ?? 0, target, rate, dt); return o.userData[field]; };
+  for (const [nm, tgt, sgn] of [['Jelly_Arm_L', P.armL, 1], ['Jelly_Arm_R', P.armR, -1]]) {
+    const o = parts[nm]; if (!o) continue;
+    const a = lag(nm, 'a', tgt + (wide - 1) * 2 * sgn, 14);
+    o.quaternion.copy(base[nm].q).premultiply(tmpQ.setFromAxisAngle(Z, a));
+  }
+  for (const [nm, tgt] of [['Jelly_Foot_L', P.footL], ['Jelly_Foot_R', P.footR]]) {
+    const o = parts[nm]; if (!o) continue;
+    o.position.y = base[nm].p.y + lag(nm, 'f', tgt, 18);
+  }
+  const blink = (breathT % 3.4) < 0.12 && P.eye === 'normal' ? 0.15 : 1;
+  for (const [nm, key] of [['Jelly_Eye_L', 'L'], ['Jelly_Eye_R', 'R']]) {
+    const o = parts[nm]; if (!o) continue;
+    const es = lag(nm, 'e', P.eyeScale, 16);
+    o.visible = P.eye === 'normal';
+    o.scale.set(base[nm].s.x * es, base[nm].s.y, base[nm].s.z * es * blink);
+    if (chevrons[key]) { chevrons[key].happy.visible = P.eye === 'happy'; chevrons[key].closed.visible = P.eye === 'closed'; }
+  }
+  for (const nm of ['Jelly_Cheek_L', 'Jelly_Cheek_R']) {
+    const o = parts[nm]; if (!o) continue;
+    const c = lag(nm, 'c', P.cheek, 12);
+    o.scale.set(base[nm].s.x * c, base[nm].s.y * (1 + (c - 1) * 1.5), base[nm].s.z * c);
+  }
+
+  // 그림자
+  const tipK = P.tip / 1.48;
+  shadow.scale.set(1 - P.y * 0.8, 1, (1 - P.y * 0.8) * (1 + tipK * 0.9));
+  shadow.position.set(Math.sin(P.spin) * tipK * 0.45, 0.004, Math.cos(P.spin) * tipK * 0.45);
+  shadow.rotation.y = P.spin;
+
+  // 나타날 때 뿅
+  if (popT < 1) popT = Math.min(1, popT + dt / 0.45);
+  stage.scale.setScalar(S * Math.max(0.001, elasticOut(popT)));
+  updateFx(dt);
+}
+
+/* ───────── 놓기 · 걷기 · 탭 ───────── */
+let placed = false, mode = 'none', floorY = 0;
+const raycaster = new THREE.Raycaster();
+const camWorldPos = () => (mode === 'xr' ? renderer.xr.getCamera() : camera).getWorldPosition(new THREE.Vector3());
+
+function placeAt(pt) {
+  stage.position.copy(pt); floorY = pt.y;
+  const cp = camWorldPos(); stage.rotation.y = Math.atan2(cp.x - pt.x, cp.z - pt.z);
+  stage.visible = true; placed = true; popT = 0; walk = null; endAct();
+  SQ.x = 1; SQ.v = 0; $('bar').classList.remove('off');
+}
+function walkTo(pt) {
+  const max = (mode === 'xr' ? 1.0 : 1.5);
+  tmpV.subVectors(pt, stage.position); tmpV.y = 0;
+  if (mode !== 'xr') { const r = Math.hypot(pt.x, pt.z); if (r > 1.5) pt.multiplyScalar(1.5 / r); }
+  else if (tmpV.length() > max) pt.copy(stage.position).addScaledVector(tmpV.normalize(), max);
+  pt.y = floorY; walk = { target: pt.clone(), phase: 0, step: 0 }; endAct();
+}
+function rayFloor(ray) {
+  if (ray.dir.y > -0.02) return null;
+  const t = (floorY - ray.origin.y) / ray.dir.y; if (t <= 0) return null;
+  return ray.origin.clone().addScaledVector(ray.dir, t);
+}
+function hitsCharacter(ray) {
+  if (!placed || !model) return false;
+  raycaster.set(ray.origin, ray.dir);
+  return raycaster.intersectObjects(meshes, false).length > 0;
+}
+
+let pending = null;
+function handleTap(ray) {
+  if (mode === 'xr' && !placed) { if (reticle.visible) placeAt(reticlePos.clone()); return; }
+  if (!placed) return;
+  const now = performance.now();
+  if (pending && now - pending.time < 300) {   // 두 번 탭 → 순간이동
+    clearTimeout(pending.timer); pending = null;
+    let pt = mode === 'xr' && reticle.visible ? reticlePos.clone() : rayFloor(ray);
+    if (pt) { if (mode !== 'xr') { const r = Math.hypot(pt.x, pt.z); if (r > 1.5) pt.multiplyScalar(1.5 / r); pt.y = 0; } placeAt(pt); }
+    return;
+  }
+  const p = { time: now };
+  p.timer = setTimeout(() => {               // 한 번 탭 → 쓰다듬기 또는 걸어가기
+    pending = null;
+    if (hitsCharacter(ray)) play('pat');
+    else { const pt = rayFloor(ray); if (pt) walkTo(pt); }
+  }, 280);
+  pending = p;
+}
+
+// 화면 탭 (PC 미리보기 · 아이폰 카메라 모드)
+let down = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!down || mode === 'xr' || mode === 'none') return;
+  const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dur = performance.now() - down.t; down = null;
+  if (moved > 10 || dur > 400) return;
+  const ndc = new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  handleTap({ origin: raycaster.ray.origin.clone(), dir: raycaster.ray.direction.clone() });
+});
 
 /* ───────── 안드로이드: WebXR AR ───────── */
-let xrSession = null, hitTestSource = null, placed = false, hintState = '';
-
 const reticle = new THREE.Group();
-reticle.add(
-  new THREE.Mesh(new THREE.RingGeometry(0.035, 0.045, 48).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })),
-  new THREE.Mesh(new THREE.CircleGeometry(0.006, 16).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: 0xffffff }))
-);
-reticle.matrixAutoUpdate = false;
-reticle.visible = false;
-scene.add(reticle);
-
-const controller = renderer.xr.getController(0);
-controller.addEventListener('select', onSelect);
-scene.add(controller);
-
-const tmpPos = new THREE.Vector3(), tmpQuat = new THREE.Quaternion(), tmpScale = new THREE.Vector3();
-const tmpUp = new THREE.Vector3(), camPos = new THREE.Vector3();
-
-function setHint(state) {
-  if (state === hintState) return;
-  hintState = state;
-  $('xr-hint').textContent = {
-    scan: '책상을 천천히 비춰 주세요',
-    ready: '하얀 원이 보이면 화면을 탭하세요',
-    placed: '다른 곳을 탭하면 캐릭터가 이동해요',
-  }[state];
-}
-
-function onSelect() {
-  if (!reticle.visible) return;
-  reticle.matrix.decompose(tmpPos, tmpQuat, tmpScale);
-  stage.position.copy(tmpPos);
-  camPos.setFromMatrixPosition(renderer.xr.getCamera().matrixWorld);
-  stage.rotation.set(0, Math.atan2(camPos.x - tmpPos.x, camPos.z - tmpPos.z), 0); // 나를 보게 돌리기
-  stage.visible = true;
-  placed = true;
-  aimSun(tmpPos, AR_HEIGHT_M);
-}
+reticle.add(new THREE.Mesh(new THREE.RingGeometry(0.03, 0.04, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xeaffc9, transparent: true, opacity: 0.95 })),
+            new THREE.Mesh(new THREE.CircleGeometry(0.006, 16).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xeaffc9 })));
+reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
+const reticlePos = new THREE.Vector3();
+const controller = renderer.xr.getController(0); scene.add(controller);
+controller.addEventListener('select', () => {
+  const origin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
+  const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(tmpQ.setFromRotationMatrix(controller.matrixWorld)).normalize();
+  handleTap({ origin, dir });
+});
+let xrSession = null, hitSource = null, hintState = '';
+function setHint(t) { if (t !== hintState) { hintState = t; $('hint').textContent = t; } }
 
 async function startAR() {
   try {
     const session = await navigator.xr.requestSession('immersive-ar', {
-      requiredFeatures: ['hit-test'],
-      optionalFeatures: ['dom-overlay'],
-      domOverlay: { root: $('xr-overlay') },
-    });
+      requiredFeatures: ['hit-test'], optionalFeatures: ['dom-overlay'], domOverlay: { root: $('hud') } });
     renderer.xr.setReferenceSpaceType('local');
     await renderer.xr.setSession(session);
     xrSession = session;
-    const viewerSpace = await session.requestReferenceSpace('viewer');
-    hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
-    session.addEventListener('end', onSessionEnd);
+    hitSource = await session.requestHitTestSource({ space: await session.requestReferenceSpace('viewer') });
+    session.addEventListener('end', () => { hitSource = null; xrSession = null; reticle.visible = false; backToIntro(); });
+    enterMode('xr');
+  } catch (e) { console.error(e); introMsg('AR을 시작하지 못했어요. 카메라 권한을 확인해 주세요.'); }
+}
 
-    // AR 모드로 전환
-    scene.background = null;
-    previewFloor.visible = false;
-    shadowPlane.visible = true;
-    stage.visible = false;
-    stage.scale.setScalar(AR_HEIGHT_M);
-    controls.enabled = false;
-    placed = false;
-    hintState = '';
-    setHint('scan');
-    $('xr-overlay').classList.add('on');
-    $('ui').classList.add('hidden');
-  } catch (e) {
-    setMsg('AR을 시작하지 못했어요.\n카메라 권한을 허용했는지 확인해 주세요.');
-    console.error(e);
+/* ───────── 아이폰 등: 카메라로 놀아주기 ───────── */
+let stream = null;
+async function startCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    const v = $('camvid'); v.srcObject = stream; v.style.display = 'block'; await v.play();
+    enterMode('cam');
+  } catch (e) { console.error(e); introMsg('카메라를 켜지 못했어요. 카메라 권한을 허용해 주세요.'); }
+}
+function stopCam() { if (stream) stream.getTracks().forEach((t) => t.stop()); stream = null; $('camvid').style.display = 'none'; }
+
+/* ───────── 화면 전환 ───────── */
+function enterMode(m) {
+  mode = m; placed = false; stage.visible = false; walk = null; endAct(); fx.splice(0).forEach((f) => stage.remove(f.sp));
+  $('intro').classList.add('hidden'); $('hud').classList.add('on'); $('bar').classList.add('off');
+  if (m === 'xr') {
+    scene.background = null; previewFloor.visible = false; S = AR_HEIGHT_M; hintState = ''; setHint('책상을 천천히 비춰 주세요');
+  } else if (m === 'cam') {
+    scene.background = null; previewFloor.visible = false; S = 1; floorY = 0;
+    camera.fov = 60; camera.position.set(0, 1.35, 2.9); camera.lookAt(0, 0.35, 0); camera.updateProjectionMatrix();
+    controls.enabled = false; $('hint').textContent = '한 번 탭: 걸어가기 · 두 번 탭: 순간이동';
+    placeAt(new THREE.Vector3(0, 0, 0));
+  } else if (m === 'preview') {
+    scene.background = BG; previewFloor.visible = true; S = 1; floorY = 0;
+    camera.fov = 40; camera.position.set(0, 1.5, 4.2); controls.target.set(0, 0.45, 0); camera.updateProjectionMatrix();
+    controls.enabled = true; controls.update();
+    $('hint').textContent = '클릭: 걸어가기 · 더블클릭: 순간이동';
+    placeAt(new THREE.Vector3(0, 0, 0));
   }
 }
+function backToIntro() {
+  stopCam(); mode = 'none'; placed = false; stage.visible = false; controls.enabled = false; previewFloor.visible = false;
+  scene.background = null; $('hud').classList.remove('on'); $('intro').classList.remove('hidden');
+}
+$('close').addEventListener('click', () => { if (xrSession) xrSession.end(); else backToIntro(); });
+for (const el of [$('close'), $('bar')]) el.addEventListener('beforexrselect', (e) => e.preventDefault());
+document.querySelectorAll('#bar button').forEach((b) => b.addEventListener('click', () => play(b.dataset.act)));
+$('btn-ar').addEventListener('click', startAR);
+$('btn-cam').addEventListener('click', startCam);
+$('btn-3d').addEventListener('click', () => enterMode('preview'));
 
-function onSessionEnd() {
-  if (hitTestSource) hitTestSource.cancel();
-  hitTestSource = null;
-  xrSession = null;
-  reticle.visible = false;
-  // 미리보기로 복귀
-  scene.background = PREVIEW_BG;
-  previewFloor.visible = true;
-  shadowPlane.visible = false;
-  stage.visible = true;
-  stage.position.set(0, 0, 0);
-  stage.rotation.set(0, 0, 0);
-  stage.scale.setScalar(1);
-  aimSun(new THREE.Vector3(), 1);
-  controls.enabled = true;
-  $('xr-overlay').classList.remove('on');
-  $('ui').classList.remove('hidden');
+/* ───────── 아이폰: 애플 AR (Quick Look) 파일 만들기 ───────── */
+function quickLookButtonSVG() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="270" height="72" viewBox="0 0 270 72">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8ea55"/><stop offset="1" stop-color="#8fdc3a"/></linearGradient></defs>
+    <rect x="1.5" y="7.5" width="267" height="62" rx="31" fill="#1f4a06"/>
+    <rect x="1.5" y="1.5" width="267" height="62" rx="31" fill="url(#g)" stroke="#1f4a06" stroke-width="3"/>
+    <rect x="18" y="7" width="234" height="8" rx="4" fill="#ffffff" opacity=".45"/>
+    <text x="135" y="41" text-anchor="middle" font-family="-apple-system, 'Apple SD Gothic Neo', sans-serif" font-size="21" font-weight="900" fill="#1f4a06">책상에 올려놓기</text></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+async function prepareQuickLook() {
+  let url = null;
+  try { const r = await fetch(MODEL_USDZ, { method: 'HEAD' }); if (r.ok) url = MODEL_USDZ; } catch (e) {}
+  if (!url) {
+    const holder = new THREE.Group(); const clone = model.clone(true);
+    const drop = [];
+    clone.traverse((o) => {
+      if (!o.isMesh) return;
+      if (o.material === outlineMat || o.material === eyeMat) { drop.push(o); return; }   // 외곽선 껍데기·> < 눈은 빼기
+      const p = Object.values(PALETTE).find((pp) => o.material.uniforms && o.material.uniforms.uLit.value === pp.lit) || PALETTE.Jelly_Green;
+      o.material = new THREE.MeshStandardMaterial({ color: p.lit.clone(), roughness: 0.55 });
+    });
+    drop.forEach((o) => o.parent.remove(o));
+    holder.add(clone); holder.scale.setScalar(AR_HEIGHT_M); holder.updateMatrixWorld(true);
+    const ex = new USDZExporter();
+    const data = ex.parseAsync ? await ex.parseAsync(holder) : await ex.parse(holder);
+    url = URL.createObjectURL(new Blob([data], { type: 'model/vnd.usdz+zip' }));
+  }
+  $('ql').href = url; $('ql').classList.remove('wait');
 }
 
-$('ar-btn').addEventListener('click', startAR);
-$('xr-close').addEventListener('click', () => xrSession && xrSession.end());
-$('xr-close').addEventListener('beforexrselect', (e) => e.preventDefault()); // 종료 버튼 탭이 캐릭터 이동으로 안 넘어가게
+/* ───────── 시작 ───────── */
+async function boot() {
+  $('ql-img').src = quickLookButtonSVG();
+  let xrOK = false;
+  if (!isIOS && window.isSecureContext && navigator.xr) { try { xrOK = await navigator.xr.isSessionSupported('immersive-ar'); } catch (e) {} }
+  const camOK = isMobile && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext;
 
-/* ───────── 기기별 버튼 준비 ───────── */
-async function setup() {
+  try { setupModel(await new GLTFLoader().loadAsync(MODEL_URL)); }
+  catch (e) { console.error(e); introMsg('친구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); return; }
+
   if (isIOS) {
-    setMsg('버튼을 누르면 아이폰 AR 화면이 열려요.\n책상을 비추면 캐릭터가 올라가요.' +
-      (isIOSChrome ? '\n(크롬에서 안 열리면 사파리로 열어 주세요)' : ''));
-    try { await prepareQuickLook(); }
-    catch (e) { setMsg('아이폰용 AR 파일을 만들지 못했어요.'); console.error(e); }
-    return;
-  }
-
-  let supported = false;
-  if (window.isSecureContext && navigator.xr) {
-    try { supported = await navigator.xr.isSessionSupported('immersive-ar'); } catch (e) { supported = false; }
-  }
-  if (supported) {
-    setMsg('버튼을 누르고 카메라를 허용한 뒤\n책상을 비춰 주세요.');
-    $('ar-btn').classList.remove('hidden');
-  } else if (isMobile && !window.isSecureContext) {
-    setMsg('AR은 https 주소에서만 실행돼요.');
+    $('ql').classList.remove('hidden'); if (camOK) $('btn-cam').classList.remove('hidden');
+    introMsg('카메라 사용 권한이 필요해요');
+    try { await prepareQuickLook(); } catch (e) { console.error(e); introMsg('애플 AR 파일을 만들지 못했어요. "카메라로 놀아주기"를 써 주세요.'); }
+  } else if (xrOK) {
+    $('btn-ar').classList.remove('hidden'); if (camOK) $('btn-cam').classList.remove('hidden');
+    introMsg('카메라 사용 권한이 필요해요');
   } else if (isMobile) {
-    setMsg('이 브라우저에서는 AR을 쓸 수 없어요.\n크롬으로 열어 주세요. (ARCore 지원 폰 필요)');
+    if (camOK) { $('btn-cam').classList.remove('hidden'); $('btn-cam').className = 'cta'; $('btn-cam').textContent = '카메라로 놀아주기'; }
+    $('btn-3d').classList.remove('hidden'); $('btn-3d').className = 'sub'; $('btn-3d').textContent = '화면에서 놀기 ›';
+    introMsg(window.isSecureContext ? '이 폰은 책상 인식 AR을 지원하지 않아요.\n카메라 모드로 놀 수 있어요.' : 'AR은 https 주소에서만 실행돼요.');
   } else {
-    setMsg('PC에서는 3D 미리보기만 돼요. 드래그해서 돌려 보세요.\n폰에서 링크를 열면 AR로 볼 수 있어요.');
+    $('btn-3d').classList.remove('hidden');
+    introMsg('PC에서는 화면 속에서 놀 수 있어요.\n폰으로 열면 책상 위 AR로 볼 수 있어요.');
   }
 }
-setup();
+boot();
 
 /* ───────── 매 프레임 ───────── */
 const clock = new THREE.Clock();
 renderer.setAnimationLoop((time, frame) => {
-  const dt = clock.getDelta();
-  character.update(clock.elapsedTime, dt);
-
-  if (frame && hitTestSource) {
-    const results = frame.getHitTestResults(hitTestSource);
-    if (results.length) {
-      const pose = results[0].getPose(renderer.xr.getReferenceSpace());
+  const dt = Math.min(clock.getDelta(), 1 / 20);
+  if (frame && hitSource) {
+    const res = frame.getHitTestResults(hitSource);
+    if (res.length) {
+      const pose = res[0].getPose(renderer.xr.getReferenceSpace());
       reticle.matrix.fromArray(pose.transform.matrix);
-      tmpUp.setFromMatrixColumn(reticle.matrix, 1).normalize();
-      reticle.visible = tmpUp.y > 0.85; // 책상처럼 평평한 면에서만 표시
-    } else {
-      reticle.visible = false;
-    }
-    setHint(placed ? 'placed' : reticle.visible ? 'ready' : 'scan');
-  } else {
-    controls.update();
-  }
+      const up = new THREE.Vector3().setFromMatrixColumn(reticle.matrix, 1);
+      reticle.visible = up.y > 0.85; reticlePos.setFromMatrixPosition(reticle.matrix);
+    } else reticle.visible = false;
+    reticle.scale.setScalar(placed ? 0.6 : 1);
+    setHint(placed ? '한 번 탭: 걸어가기 · 두 번 탭: 원 위치로 이동' : reticle.visible ? '원이 보이면 화면을 탭하세요' : '책상을 천천히 비춰 주세요');
+  } else if (mode === 'preview') controls.update();
+  if (model && stage.visible) animate(dt);
   renderer.render(scene, camera);
 });
-
-window.addEventListener('resize', () => {
+addEventListener('resize', () => {
   if (renderer.xr.isPresenting) return;
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
 });
 </script>
 </body>
